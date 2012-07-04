@@ -8,7 +8,6 @@ Resources
 *  [fstoerkle's svg2vmlpaths.js](https://github.com/fstoerkle/robmap/blob/master/lib/svg2vmlpaths.js "fstoerkle's svg2vmlpaths.js")
 *  [VML path data specification](http://www.w3.org/TR/NOTE-VML#_Toc416858391 "VML path data specification")
 *  [SVG path data specification](http://www.w3.org/TR/SVG11/paths.html#PathDataGeneralInformation "SVG path data specification")
-
 *  [Other Leaflet plugins](https://github.com/CloudMade/Leaflet/issues/399 "Other Leaflet plugins")
 *  [Jasmine](http://pivotal.github.com/jasmine/ "Jasmine")
 
