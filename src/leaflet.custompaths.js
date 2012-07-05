@@ -71,7 +71,7 @@ L.CustomPath = L.Path.extend({
                 z: { name: 'x', convert: true },
                 C: { name: 'c' },
                 c: { name: 'v' } },
-            point = { x: 0, y: 0 };
+            currentPoint = { x: 0, y: 0 };
 
         (asString ? this.parse(pathData) : pathData).forEach(function(item) {
             var command = commands[item[0]],
@@ -83,17 +83,16 @@ L.CustomPath = L.Path.extend({
                 // relative coordinates
                 if (command.convert) {
                     for(i=0; i<coords.length; ++i) {
-                        coords[i] += point.x;
-                        coords[++i] += point.y;
+                        coords[i] += currentPoint.x;
+                        coords[++i] += currentPoint.y;
                     }
                 }
 
-                point = self.fromCoords(coords, function(old, next) { return old+next; }, point);
+                currentPoint = self.fromCoords(coords, function(old, next) { return old+next; }, currentPoint);
             } else {
                 // absolute coordinates
-                point = self.fromCoords(coords, function(old, next) { return next; }, point);
+                currentPoint = self.fromCoords(coords, function(old, next) { return next; }, currentPoint);
             }
-            console.log(point);
 
             vmlData.push(command.name);
             coords.forEach(function(c) { vmlData.push(c); });
