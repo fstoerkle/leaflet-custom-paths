@@ -1,7 +1,13 @@
 L.CustomPath = L.Path.extend({
+    ABSOLUTE: 'absolute',
+    RELATIVE: 'relative',
+
     initialize: function(data, options) {
         L.Path.prototype.initialize.call(this, options);
         this._customData = data;
+
+        this._x = 0;
+        this._y = 0;
     },
 
     getPathString: function() {
@@ -21,15 +27,16 @@ L.CustomPath = L.Path.extend({
                 parseNum = function(str) {
                     return Math.round(parseFloat(str));
                 };
-            
+
             found = item.match(/^([a-zA-Z])([0-9]*)/);
+
             if (found && found[1]) {
                 if (command) {
                     addCommand();
                 }
 
                 command = found[1];
-                coords = [ parseNum(found[2]) ];
+                coords = found[2] === '' ? [] : [ parseNum(found[2]) ];
                 return;
             }
 
@@ -48,34 +55,59 @@ L.CustomPath = L.Path.extend({
     },
 
     convertPath: function(pathData) {
-        var asString = typeof pathData === typeof '',
-            data = asString ? this.parse(pathData) : pathData,
+        var self = this,
+            asString = (typeof pathData === typeof ''),
             vmlData = [],
-            i, j, command, temp,
             commands = {
-                M: 'm',
-                x: function(coords) { return ['x2vml', coords]; },
-                L: 'l',
-                l: 'r',
+                M: { name: 'm' },
+                m: { name: 'm', convert: true },
+                L: { name: 'l' },
+                l: { name: 'r' },
                 H: function(coords) { return ['H2vml', coords]; },
                 h: function(coords) { return ['h2vml', coords]; },
                 V: function(coords) { return ['V2vml', coords]; },
                 v: function(coords) { return ['v2vml', coords]; },
-                Z: 'x',
-                z: 'x',
-                C: 'c',
-                c: 'v'
-        };
+                Z: { name: 'x' },
+                z: { name: 'x', convert: true },
+                C: { name: 'c' },
+                c: { name: 'v' } },
+            point = { x: 0, y: 0 };
 
-        data.forEach(function(item) {
-            command = commands[item[0]];
-            coords = item[1];
+        (asString ? this.parse(pathData) : pathData).forEach(function(item) {
+            var command = commands[item[0]],
+                coords = item[1],
+                isRelative = command.name === command.name.toLowerCase(),
+                i;
 
-            vmlData.push(typeof command === 'function' ? command(coords) : [ command, coords ]);
+            if (isRelative) {
+                // relative coordinates
+                if (command.convert) {
+                    for(i=0; i<coords.length; ++i) {
+                        coords[i] += point.x;
+                        coords[++i] += point.y;
+                    }
+                }
+
+                point = self.fromCoords(coords, function(old, next) { return old+next; }, point);
+            } else {
+                // absolute coordinates
+                point = self.fromCoords(coords, function(old, next) { return next; }, point);
+            }
+            console.log(point);
+
+            vmlData.push(command.name);
+            coords.forEach(function(c) { vmlData.push(c); });
         });
 
-
-
         return asString ? vmlData.join(' ') : vmlData;
+    },
+
+    fromCoords: function(coords, compute, p) {
+        for(var i=0; i<coords.length; ++i) {
+            p.x = compute(p.x, coords[i]);
+            p.y = compute(p.y, coords[++i]);
+        }
+
+        return p;
     }
 });
