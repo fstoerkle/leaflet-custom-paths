@@ -18,6 +18,14 @@
 <body>
 <div id="map"></div>
 
-<script src="example.js"></script>
+<script>
+var map = new L.Map('map', { center: new L.LatLng(51.505, -0.09), zoom: 9 }),
+    data = 'M100,200 C100,100 250,100 250,200S400,300 400,200',
+    path = new L.CustomPath(data, { color: 'red', weight: 3 });
+
+map.addLayer(new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'));
+map.addLayer(path);
+
+</script>
 </body>
 </html>
