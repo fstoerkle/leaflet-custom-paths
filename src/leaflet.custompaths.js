@@ -1,17 +1,13 @@
 L.CustomPath = L.Path.extend({
-    ABSOLUTE: 'absolute',
-    RELATIVE: 'relative',
-
     initialize: function(data, options) {
         L.Path.prototype.initialize.call(this, options);
-        this._customData = data;
 
-        this._x = 0;
-        this._y = 0;
+        this._customData = data;
     },
 
     getPathString: function() {
-        return this._customData instanceof Array ? this._customData.join(' ') : this._customData;
+        var data = L.Browser.vml ? this.convertToVml(this._customData) : this._customData;
+        return data instanceof Array ? data.join(' ') : data;
     },
 
     parse: function(data) {
@@ -54,7 +50,7 @@ L.CustomPath = L.Path.extend({
         return parsed;
     },
 
-    convertPath: function(pathData) {
+    convertToVml: function(pathData) {
         var self = this,
             asString = (typeof pathData === typeof ''),
             vmlData = [],
@@ -68,7 +64,7 @@ L.CustomPath = L.Path.extend({
                 V: function(coords) { return ['V2vml', coords]; },
                 v: function(coords) { return ['v2vml', coords]; },
                 Z: { name: 'x' },
-                z: { name: 'x', convert: true },
+                z: { name: 'x' },
                 C: { name: 'c' },
                 c: { name: 'v' } },
             currentPoint = { x: 0, y: 0 };
@@ -88,10 +84,10 @@ L.CustomPath = L.Path.extend({
                     }
                 }
 
-                currentPoint = self.fromCoords(coords, function(old, next) { return old+next; }, currentPoint);
+                self.updateCurrentPoint(coords, currentPoint);
             } else {
                 // absolute coordinates
-                currentPoint = self.fromCoords(coords, function(old, next) { return next; }, currentPoint);
+                self.updateCurrentPoint(coords, currentPoint);
             }
 
             vmlData.push(command.name);
@@ -101,10 +97,10 @@ L.CustomPath = L.Path.extend({
         return asString ? vmlData.join(' ') : vmlData;
     },
 
-    fromCoords: function(coords, compute, p) {
+    updateCurrentPoint: function(coords, p) {
         for(var i=0; i<coords.length; ++i) {
-            p.x = compute(p.x, coords[i]);
-            p.y = compute(p.y, coords[++i]);
+            p.x = coords[i];
+            p.y = coords[++i];
         }
 
         return p;
